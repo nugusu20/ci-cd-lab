@@ -17,6 +17,10 @@ on:
       - 'requirements-dev.txt'
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-lint:
     runs-on: ubuntu-latest
