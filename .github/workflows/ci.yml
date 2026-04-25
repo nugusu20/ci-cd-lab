@@ -24,6 +24,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
+      - name: Run application smoke check
+        run: |
+          python app/main.py
+
       - name: Run lint
         run: |
           python -m flake8 app tests
