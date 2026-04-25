@@ -78,3 +78,14 @@ jobs:
       - name: Run tests
         run: |
           python -m pytest tests/
+
+      - name: Write test summary
+        run: |
+          mkdir -p artifacts
+          printf 'Python version: %s\nTests: passed\n' "${{ matrix.python-version }}" > artifacts/test-summary.txt
+
+      - name: Upload test summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-${{ matrix.python-version }}
+          path: artifacts/test-summary.txt
