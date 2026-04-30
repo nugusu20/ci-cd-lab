@@ -14,7 +14,7 @@ pipeline {
 
         stage('Smoke') {
             steps {
-                sh 'cd /workspace/ci-cd-lab && python3 app/main.py'
+                sh 'cd /workspace/ci-cd-lab && python3 -m app.main & sleep 2 && curl -fsS http://127.0.0.1:8000/health && pkill -f "python3 -m app.main" || true'
             }
         }
 
@@ -27,6 +27,12 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'cd /workspace/ci-cd-lab && python3 -m pytest tests/'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'cd /workspace/ci-cd-lab && docker build -t ci-cd-lab:jenkins .'
             }
         }
 
