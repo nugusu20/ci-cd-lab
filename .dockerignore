@@ -1,0 +1,8 @@
+.venv
+.git
+.github
+.pytest_cache
+__pycache__
+*.pyc
+tasks.db
+deploy-output
