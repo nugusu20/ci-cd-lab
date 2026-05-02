@@ -36,6 +36,18 @@ pipeline {
             }
         }
 
+        stage('Container Health Check') {
+            steps {
+                sh '''
+                    docker rm -f ci-cd-lab-jenkins-check 2>/dev/null || true
+                    docker run -d --rm --name ci-cd-lab-jenkins-check ci-cd-lab:jenkins
+                    sleep 3
+                    docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+                    docker stop ci-cd-lab-jenkins-check
+                '''
+            }
+        }
+
         stage('Approval') {
             when {
                 expression { return params.RUN_DEPLOY }
