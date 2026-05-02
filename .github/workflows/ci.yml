@@ -106,13 +106,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set image variables
+        run: |
+          echo "IMAGE_NAME=ci-cd-lab" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
       - name: Build Docker image
         run: |
-          docker build -t ci-cd-lab:ci .
+          docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
 
       - name: Run container health check
         run: |
-          docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 ci-cd-lab:ci
+          docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 "${IMAGE_NAME}:${IMAGE_TAG}"
           sleep 3
           curl -fsS http://127.0.0.1:8000/health
           docker stop ci-cd-lab-ci
