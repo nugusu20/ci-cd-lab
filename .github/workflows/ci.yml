@@ -109,3 +109,10 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t ci-cd-lab:ci .
+
+      - name: Run container health check
+        run: |
+          docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 ci-cd-lab:ci
+          sleep 3
+          curl -fsS http://127.0.0.1:8000/health
+          docker stop ci-cd-lab-ci
