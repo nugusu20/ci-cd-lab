@@ -54,6 +54,7 @@ jobs:
         run: |
           python -m app.main & sleep 2
           curl -fsS http://127.0.0.1:8000/health
+          curl -fsS http://127.0.0.1:8000/version
           pkill -f "python -m app.main" || true
 
       - name: Run lint
@@ -122,9 +123,13 @@ jobs:
 
       - name: Run container health check
         run: |
-          docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 "${IMAGE_NAME}:${IMAGE_TAG}"
+          docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 \
+            -e APP_VERSION="${IMAGE_TAG}" \
+            -e IMAGE_TAG="${IMAGE_TAG}" \
+            "${IMAGE_NAME}:${IMAGE_TAG}"
           sleep 3
           curl -fsS http://127.0.0.1:8000/health
+          curl -fsS http://127.0.0.1:8000/version
           docker stop ci-cd-lab-ci
 
       - name: Upload image metadata artifact
