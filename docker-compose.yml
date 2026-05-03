@@ -4,6 +4,9 @@ services:
     container_name: ci-cd-lab-app
     ports:
       - "8000:8000"
+    environment:
+      APP_VERSION: local-compose
+      IMAGE_TAG: local-compose
     volumes:
       - ./tasks.db:/app/tasks.db
     restart: unless-stopped
