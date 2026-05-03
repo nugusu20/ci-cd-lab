@@ -107,6 +107,7 @@ pipeline {
                     printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
                     printf 'job=%s\n' "$JOB_NAME" >> deploy-output/deployment.txt
                     printf 'build=%s\n' "$BUILD_NUMBER" >> deploy-output/deployment.txt
+                    printf 'version=%s\n' "$IMAGE_TAG" >> deploy-output/deployment.txt
                     printf 'image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" >> deploy-output/deployment.txt
                     cat deploy-output/deployment.txt
                 '''
