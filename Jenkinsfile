@@ -53,6 +53,17 @@ pipeline {
             }
         }
 
+        stage('Write Image Metadata') {
+            steps {
+                sh '''
+                    cd /workspace/ci-cd-lab
+                    mkdir -p build
+                    printf 'image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" > build/image-info.txt
+                    cat build/image-info.txt
+                '''
+            }
+        }
+
         stage('Container Health Check') {
             steps {
                 sh '''
