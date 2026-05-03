@@ -115,9 +115,20 @@ jobs:
         run: |
           docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
 
+      - name: Write image metadata
+        run: |
+          mkdir -p artifacts
+          printf 'image=%s:%s\n' "${IMAGE_NAME}" "${IMAGE_TAG}" > artifacts/image-info.txt
+
       - name: Run container health check
         run: |
           docker run -d --rm --name ci-cd-lab-ci -p 8000:8000 "${IMAGE_NAME}:${IMAGE_TAG}"
           sleep 3
           curl -fsS http://127.0.0.1:8000/health
           docker stop ci-cd-lab-ci
+
+      - name: Upload image metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-info
+          path: artifacts/image-info.txt
