@@ -14,7 +14,14 @@ pipeline {
 
         stage('Smoke') {
             steps {
-                sh 'cd /workspace/ci-cd-lab && python3 -m app.main & sleep 2 && curl -fsS http://127.0.0.1:8000/health && pkill -f "python3 -m app.main" || true'
+                sh '''
+                    cd /workspace/ci-cd-lab
+                    python3 -m app.main &
+                    sleep 2
+                    curl -fsS http://127.0.0.1:8000/health
+                    curl -fsS http://127.0.0.1:8000/version
+                    pkill -f "python3 -m app.main" || true
+                '''
             }
         }
 
@@ -68,9 +75,13 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f ci-cd-lab-jenkins-check 2>/dev/null || true
-                    docker run -d --rm --name ci-cd-lab-jenkins-check ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker run -d --rm --name ci-cd-lab-jenkins-check \
+                      -e APP_VERSION="${IMAGE_TAG}" \
+                      -e IMAGE_TAG="${IMAGE_TAG}" \
+                      ${IMAGE_NAME}:${IMAGE_TAG}
                     sleep 3
                     docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+                    docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
                     docker stop ci-cd-lab-jenkins-check
                 '''
             }
