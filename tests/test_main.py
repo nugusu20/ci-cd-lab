@@ -8,6 +8,17 @@ def test_health() -> None:
     assert response.get_json() == {"status": "ok"}
 
 
+def test_version() -> None:
+    client = app.test_client()
+    response = client.get("/version")
+    assert response.status_code == 200
+
+    payload = response.get_json()
+    assert payload["app"] == "ci-cd-lab"
+    assert "version" in payload
+    assert "image_tag" in payload
+
+
 def test_create_and_get_task() -> None:
     client = app.test_client()
 

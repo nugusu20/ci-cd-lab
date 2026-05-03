@@ -1,4 +1,6 @@
+import os
 from datetime import datetime, UTC
+
 from flask import Flask, jsonify, request
 
 from app.db import get_connection, init_db
@@ -27,6 +29,17 @@ def health() -> tuple:
     return jsonify({"status": "ok"}), 200
 
 
+@app.get("/version")
+def version() -> tuple:
+    return jsonify(
+        {
+            "app": "ci-cd-lab",
+            "version": os.getenv("APP_VERSION", "dev"),
+            "image_tag": os.getenv("IMAGE_TAG", "unknown"),
+        }
+    ), 200
+
+
 @app.get("/tasks")
 def list_tasks() -> tuple:
     with get_connection() as connection:
@@ -52,7 +65,9 @@ def create_task() -> tuple:
     with get_connection() as connection:
         cursor = connection.execute(
             """
-            INSERT INTO tasks (title, description, status, created_at, updated_at)
+            INSERT INTO tasks (
+                title, description, status, created_at, updated_at
+            )
             VALUES (?, ?, ?, ?, ?)
             """,
             (title, description, "todo", timestamp, timestamp),
@@ -95,14 +110,21 @@ def update_task(task_id: int) -> tuple:
             return jsonify({"error": "task not found"}), 404
 
         title = str(payload.get("title", existing["title"])).strip()
-        description = str(payload.get("description", existing["description"])).strip()
+        description_value = payload.get(
+            "description",
+            existing["description"],
+        )
+        description = str(description_value).strip()
         status = str(payload.get("status", existing["status"])).strip()
 
         if not title:
             return jsonify({"error": "title is required"}), 400
 
-        if status not in {"todo", "doing", "done"}:
-            return jsonify({"error": "status must be one of: todo, doing, done"}), 400
+        valid_statuses = {"todo", "doing", "done"}
+        if status not in valid_statuses:
+            return jsonify(
+                {"error": "status must be one of: todo, doing, done"}
+            ), 400
 
         updated_at = now_iso()
 
