@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 tasks.db
 deploy-output/
+build/
+build/
