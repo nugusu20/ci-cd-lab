@@ -1,5 +1,6 @@
 services:
   app:
+    image: ${IMAGE_NAME:-ci-cd-lab}:${IMAGE_TAG:-local-compose}
     build: .
     container_name: ci-cd-lab-app
     ports:
@@ -7,6 +8,10 @@ services:
     environment:
       APP_VERSION: ${APP_VERSION:-local-compose}
       IMAGE_TAG: ${IMAGE_TAG:-local-compose}
+      DB_PATH: /data/tasks.db
     volumes:
-      - ./tasks.db:/app/tasks.db
+      - ci_cd_lab_data:/data
     restart: unless-stopped
+
+volumes:
+  ci_cd_lab_data:
