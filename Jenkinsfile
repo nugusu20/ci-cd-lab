@@ -103,10 +103,10 @@ pipeline {
             steps {
                 sh '''
                     cd /workspace/ci-cd-lab
-                    sudo docker compose down || true
-                    APP_VERSION="${IMAGE_TAG}" IMAGE_TAG="${IMAGE_TAG}" sudo -E docker compose up -d --build
+                    docker compose down || true
+                    IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" docker compose up -d
                     sleep 3
-                    curl -fsS http://127.0.0.1:8000/version
+                    docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
 
                     mkdir -p deploy-output
                     printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
