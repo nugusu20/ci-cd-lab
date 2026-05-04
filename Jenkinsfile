@@ -103,6 +103,11 @@ pipeline {
             steps {
                 sh '''
                     cd /workspace/ci-cd-lab
+                    sudo docker compose down || true
+                    APP_VERSION="${IMAGE_TAG}" IMAGE_TAG="${IMAGE_TAG}" sudo -E docker compose up -d --build
+                    sleep 3
+                    curl -fsS http://127.0.0.1:8000/version
+
                     mkdir -p deploy-output
                     printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
                     printf 'job=%s\n' "$JOB_NAME" >> deploy-output/deployment.txt

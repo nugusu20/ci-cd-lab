@@ -5,8 +5,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      APP_VERSION: local-compose
-      IMAGE_TAG: local-compose
+      APP_VERSION: ${APP_VERSION:-local-compose}
+      IMAGE_TAG: ${IMAGE_TAG:-local-compose}
     volumes:
       - ./tasks.db:/app/tasks.db
     restart: unless-stopped
