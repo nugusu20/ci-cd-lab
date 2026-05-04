@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy'
+        required: true
+        default: 'latest'
+
+jobs:
+  deploy-local:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show deploy target version
+        run: |
+          echo "Deploying image tag: ${{ github.event.inputs.image_tag }}"
+
+      - name: Simulate deployment record
+        run: |
+          mkdir -p deploy-output
+          printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
+          printf 'image=ci-cd-lab:%s\n' "${{ github.event.inputs.image_tag }}" >> deploy-output/deployment.txt
+          cat deploy-output/deployment.txt
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-record
+          path: deploy-output/deployment.txt
