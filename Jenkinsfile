@@ -79,9 +79,10 @@ pipeline {
                       -e APP_VERSION="${IMAGE_TAG}" \
                       -e IMAGE_TAG="${IMAGE_TAG}" \
                       ${IMAGE_NAME}:${IMAGE_TAG}
-                    sleep 3
+                    sleep 8
                     docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
                     docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
+                    docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-jenkins-check | grep healthy
                     docker stop ci-cd-lab-jenkins-check
                 '''
             }
@@ -105,7 +106,8 @@ pipeline {
                     cd /workspace/ci-cd-lab
                     docker compose down || true
                     IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" docker compose up -d
-                    sleep 3
+                    sleep 8
+                    docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-app | grep healthy
                     docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
 
                     mkdir -p deploy-output
