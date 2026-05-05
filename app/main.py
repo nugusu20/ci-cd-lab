@@ -29,6 +29,17 @@ def health() -> tuple:
     return jsonify({"status": "ok"}), 200
 
 
+@app.get("/ready")
+def ready() -> tuple:
+    try:
+        with get_connection() as connection:
+            connection.execute("SELECT 1").fetchone()
+    except Exception as exc:
+        return jsonify({"status": "not-ready", "error": str(exc)}), 503
+
+    return jsonify({"status": "ready"}), 200
+
+
 @app.get("/version")
 def version() -> tuple:
     return jsonify(

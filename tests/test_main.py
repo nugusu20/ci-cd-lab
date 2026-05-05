@@ -8,6 +8,13 @@ def test_health() -> None:
     assert response.get_json() == {"status": "ok"}
 
 
+def test_ready() -> None:
+    client = app.test_client()
+    response = client.get("/ready")
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ready"}
+
+
 def test_version() -> None:
     client = app.test_client()
     response = client.get("/version")

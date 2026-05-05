@@ -19,6 +19,7 @@ pipeline {
                     python3 -m app.main &
                     sleep 2
                     curl -fsS http://127.0.0.1:8000/health
+                    curl -fsS http://127.0.0.1:8000/ready
                     curl -fsS http://127.0.0.1:8000/version
                     pkill -f "python3 -m app.main" || true
                 '''
@@ -81,6 +82,7 @@ pipeline {
                       ${IMAGE_NAME}:${IMAGE_TAG}
                     sleep 8
                     docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+                    docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/ready').read().decode())"
                     docker exec ci-cd-lab-jenkins-check python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
                     docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-jenkins-check | grep healthy
                     docker stop ci-cd-lab-jenkins-check
@@ -108,6 +110,7 @@ pipeline {
                     IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" docker compose up -d
                     sleep 8
                     docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-app | grep healthy
+                    docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/ready').read().decode())"
                     docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
 
                     mkdir -p deploy-output
