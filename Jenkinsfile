@@ -50,14 +50,20 @@ pipeline {
                         ''',
                         returnStdout: true
                     ).trim()
+                    env.REGISTRY_IMAGE = "ghcr.io/local/ci-cd-lab:${env.IMAGE_TAG}"
                 }
                 echo "Using image tag: ${env.IMAGE_TAG}"
+                echo "Registry-ready image: ${env.REGISTRY_IMAGE}"
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'cd /workspace/ci-cd-lab && docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh '''
+                    cd /workspace/ci-cd-lab
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_IMAGE}
+                '''
             }
         }
 
@@ -66,7 +72,8 @@ pipeline {
                 sh '''
                     cd /workspace/ci-cd-lab
                     mkdir -p build
-                    printf 'image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" > build/image-info.txt
+                    printf 'local_image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" > build/image-info.txt
+                    printf 'registry_image=%s\n' "$REGISTRY_IMAGE" >> build/image-info.txt
                     cat build/image-info.txt
                 '''
             }
@@ -121,6 +128,7 @@ pipeline {
                     printf 'build=%s\n' "$BUILD_NUMBER" >> deploy-output/deployment.txt
                     printf 'version=%s\n' "$IMAGE_TAG" >> deploy-output/deployment.txt
                     printf 'image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" >> deploy-output/deployment.txt
+                    printf 'registry_image=%s\n' "$REGISTRY_IMAGE" >> deploy-output/deployment.txt
                     cat deploy-output/deployment.txt
                 '''
             }
