@@ -3,6 +3,7 @@ pipeline {
 
     parameters {
         booleanParam(name: 'RUN_DEPLOY', defaultValue: false, description: 'Run deploy stage')
+        string(name: 'DEPLOY_IMAGE_TAG', defaultValue: '', description: 'Optional image tag to deploy; leave empty to use current build tag')
     }
 
     stages {
@@ -51,9 +52,16 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     env.REGISTRY_IMAGE = "ghcr.io/local/ci-cd-lab:${env.IMAGE_TAG}"
+
+                    if (params.DEPLOY_IMAGE_TAG?.trim()) {
+                        env.EFFECTIVE_DEPLOY_TAG = params.DEPLOY_IMAGE_TAG.trim()
+                    } else {
+                        env.EFFECTIVE_DEPLOY_TAG = env.IMAGE_TAG
+                    }
                 }
-                echo "Using image tag: ${env.IMAGE_TAG}"
+                echo "Build image tag: ${env.IMAGE_TAG}"
                 echo "Registry-ready image: ${env.REGISTRY_IMAGE}"
+                echo "Effective deploy tag: ${env.EFFECTIVE_DEPLOY_TAG}"
             }
         }
 
@@ -74,6 +82,7 @@ pipeline {
                     mkdir -p build
                     printf 'local_image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" > build/image-info.txt
                     printf 'registry_image=%s\n' "$REGISTRY_IMAGE" >> build/image-info.txt
+                    printf 'effective_deploy_tag=%s\n' "$EFFECTIVE_DEPLOY_TAG" >> build/image-info.txt
                     cat build/image-info.txt
                 '''
             }
@@ -114,7 +123,7 @@ pipeline {
                 sh '''
                     cd /workspace/ci-cd-lab
                     docker compose -f docker-compose.deploy.yml down || true
-                    IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" \
+                    IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${EFFECTIVE_DEPLOY_TAG}" APP_VERSION="${EFFECTIVE_DEPLOY_TAG}" \
                       docker compose -f docker-compose.deploy.yml up -d
                     sleep 8
                     docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-app | grep healthy
@@ -126,9 +135,9 @@ pipeline {
                     printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
                     printf 'job=%s\n' "$JOB_NAME" >> deploy-output/deployment.txt
                     printf 'build=%s\n' "$BUILD_NUMBER" >> deploy-output/deployment.txt
-                    printf 'version=%s\n' "$IMAGE_TAG" >> deploy-output/deployment.txt
-                    printf 'image=%s:%s\n' "$IMAGE_NAME" "$IMAGE_TAG" >> deploy-output/deployment.txt
-                    printf 'registry_image=%s\n' "$REGISTRY_IMAGE" >> deploy-output/deployment.txt
+                    printf 'version=%s\n' "$EFFECTIVE_DEPLOY_TAG" >> deploy-output/deployment.txt
+                    printf 'image=%s:%s\n' "$IMAGE_NAME" "$EFFECTIVE_DEPLOY_TAG" >> deploy-output/deployment.txt
+                    printf 'registry_image=ghcr.io/local/ci-cd-lab:%s\n' "$EFFECTIVE_DEPLOY_TAG" >> deploy-output/deployment.txt
                     cat deploy-output/deployment.txt
                 '''
             }
