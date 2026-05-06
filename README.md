@@ -2,19 +2,22 @@
 
 ![CI](https://github.com/your-user/ci-cd-lab/actions/workflows/ci.yml/badge.svg)
 
-A DevOps-focused Flask task API project used to practice CI/CD, Docker, and deployment workflows.
+A DevOps-focused Flask task API project used to practice CI/CD, Docker, reverse proxying, and deployment workflows.
 
 ## Project overview
 This project includes:
 - A Flask-based task API
 - SQLite persistence
-- Health and version endpoints
+- Health, readiness, and version endpoints
+- Gunicorn application runtime
 - Docker image build and local runtime with Docker Compose
+- Nginx reverse proxy in front of the application
 - GitHub Actions CI and manual deploy workflow
 - Jenkins pipeline with approval-gated local deploy
 
 ## Application capabilities
-- `GET /health` — basic health check
+- `GET /health` — liveness check
+- `GET /ready` — readiness check with database access
 - `GET /version` — runtime version and image metadata
 - `GET /tasks` — list tasks
 - `POST /tasks` — create a task
@@ -29,11 +32,13 @@ This project includes:
 - `tests/test_main.py` — application tests
 - `Dockerfile` — application image build
 - `docker-compose.yml` — local container runtime
+- `nginx/default.conf` — reverse proxy configuration
 - `Jenkinsfile` — Jenkins pipeline
 - `.github/workflows/ci.yml` — GitHub Actions CI workflow
 - `.github/workflows/deploy.yml` — GitHub Actions manual deploy workflow
 - `requirements.txt` — runtime dependencies
 - `requirements-dev.txt` — development and test dependencies
+- `Makefile` — common project commands
 
 ## CI/CD capabilities
 
@@ -48,9 +53,10 @@ This project includes:
 - Concurrency control
 - Docker image build
 - Container health verification
-- Version endpoint verification
+- Health, readiness, and version endpoint verification
 - Commit-based Docker image tagging
 - Image metadata artifact
+- Compose-based proxy validation
 - Separate manual deploy workflow
 
 ### Jenkins
@@ -59,17 +65,17 @@ This project includes:
 - Pytest
 - Docker image build
 - Container health verification
-- Version endpoint verification
+- Health, readiness, and version verification
 - Commit-based Docker image tagging
 - Image metadata generation
 - Approval-gated local deploy with Docker Compose
 - Deployment marker with version and image tracking
+- Proxy-based deploy validation through Nginx
 
 ## Local development
+
 Create and activate a virtual environment:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
