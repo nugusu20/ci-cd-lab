@@ -106,12 +106,14 @@ pipeline {
             steps {
                 sh '''
                     cd /workspace/ci-cd-lab
-                    docker compose down || true
-                    IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" docker compose up -d
+                    docker compose -f docker-compose.deploy.yml down || true
+                    IMAGE_NAME="${IMAGE_NAME}" IMAGE_TAG="${IMAGE_TAG}" APP_VERSION="${IMAGE_TAG}" \
+                      docker compose -f docker-compose.deploy.yml up -d
                     sleep 8
                     docker inspect --format='{{.State.Health.Status}}' ci-cd-lab-app | grep healthy
-                    docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/ready').read().decode())"
-                    docker exec ci-cd-lab-app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/version').read().decode())"
+                    docker exec ci-cd-lab-nginx wget -qO- http://127.0.0.1/health
+                    docker exec ci-cd-lab-nginx wget -qO- http://127.0.0.1/ready
+                    docker exec ci-cd-lab-nginx wget -qO- http://127.0.0.1/version
 
                     mkdir -p deploy-output
                     printf 'deployed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > deploy-output/deployment.txt
