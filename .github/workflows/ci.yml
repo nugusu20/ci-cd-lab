@@ -35,6 +35,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -122,10 +126,20 @@ jobs:
           echo "IMAGE_TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
           echo "REGISTRY_IMAGE=ghcr.io/${{ github.repository_owner }}/ci-cd-lab:${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       - name: Build Docker image
         run: |
           docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
           docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${REGISTRY_IMAGE}"
+
+      - name: Push image to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push "${REGISTRY_IMAGE}"
 
       - name: Write image metadata
         run: |
