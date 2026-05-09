@@ -1,10 +1,10 @@
 services:
   app:
-    image: ${IMAGE_NAME:-ci-cd-lab}:${IMAGE_TAG:-local-compose}
+    image: ${IMAGE_NAME:-ghcr.io/nugusu20/ci-cd-lab}:${IMAGE_TAG:-local-compose}
     container_name: ci-cd-lab-app
+    env_file:
+      - ${DEPLOY_ENV_FILE:-deploy/staging.env}
     environment:
-      APP_VERSION: ${APP_VERSION:-local-compose}
-      IMAGE_TAG: ${IMAGE_TAG:-local-compose}
       DB_PATH: /data/tasks.db
     volumes:
       - ci_cd_lab_data:/data
